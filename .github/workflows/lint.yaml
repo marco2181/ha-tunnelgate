@@ -6,18 +6,55 @@ on:
   pull_request:
 
 jobs:
-  addon:
-    name: Add-on configuration
+  checks:
+    name: Add-on checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: frenck/action-addon-linter@v2.9
-        with:
-          path: "./tunnelgate"
 
-  python:
-    name: Python syntax
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: python3 -m py_compile tunnelgate/app/main.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Python syntax
+        run: python -m py_compile tunnelgate/app/main.py
+
+      - name: Add-on configuration
+        run: |
+          pip install --quiet pyyaml
+          python - <<'EOF'
+          import sys, yaml
+          cfg = yaml.safe_load(open("tunnelgate/config.yaml"))
+          build = yaml.safe_load(open("tunnelgate/build.yaml"))
+          repo = yaml.safe_load(open("repository.yaml"))
+          errors = []
+          for key in ("name", "version", "slug", "description", "arch", "options", "schema"):
+              if key not in cfg:
+                  errors.append(f"config.yaml: missing '{key}'")
+          if not isinstance(cfg.get("version"), str):
+              errors.append("config.yaml: 'version' must be a quoted string")
+          for opt in cfg.get("options", {}):
+              if opt not in cfg.get("schema", {}):
+                  errors.append(f"config.yaml: option '{opt}' has no schema")
+          for arch in cfg.get("arch", []):
+              if arch not in build.get("build_from", {}):
+                  errors.append(f"build.yaml: no base image for '{arch}'")
+          for lang in ("en", "it"):
+              tr = yaml.safe_load(open(f"tunnelgate/translations/{lang}.yaml"))["configuration"]
+              for opt in cfg.get("options", {}):
+                  if opt not in tr:
+                      errors.append(f"translations/{lang}.yaml: missing '{opt}'")
+          if "url" not in repo or "name" not in repo:
+              errors.append("repository.yaml: needs 'name' and 'url'")
+          print("\n".join(errors) or "All add-on checks passed")
+          sys.exit(1 if errors else 0)
+          EOF
+
+      - name: Panel JavaScript syntax
+        run: |
+          python - <<'EOF'
+          import re
+          html = open("tunnelgate/app/index.html", encoding="utf-8").read()
+          open("/tmp/panel.js", "w", encoding="utf-8").write(re.search(r"<script>(.*)</script>", html, re.S).group(1))
+          EOF
+          node --check /tmp/panel.js
