@@ -1,0 +1,22 @@
+configuration:
+  token:
+    name: Access token
+    description: NordVPN access token (Nord Account > NordVPN > Manual setup > Generate new token).
+  clients:
+    name: Devices routed through the VPN
+    description: IPv4 addresses of the devices that use this host as their gateway (e.g. a TV).
+  lan_interface:
+    name: LAN interface
+    description: Auto-detected if it does not exist (usually end0 on a Raspberry Pi).
+  default_country:
+    name: Default country
+    description: Two-letter country code (e.g. US, GB, IT).
+  default_city:
+    name: Default city
+    description: Optional (e.g. Anchorage). Empty = fastest server in the country.
+  kill_switch_on_stop:
+    name: Block devices while the add-on is stopped
+    description: If enabled and the VPN was on, devices have no internet while the add-on is stopped instead of going out without VPN.
+  language:
+    name: Language
+    description: Language of the MQTT entity names and states (en = English, it = Italian). Logs are always in English.

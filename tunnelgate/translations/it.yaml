@@ -1,0 +1,22 @@
+configuration:
+  token:
+    name: Access token
+    description: Access token NordVPN (Nord Account > NordVPN > Configurazione manuale > Genera nuovo token).
+  clients:
+    name: Dispositivi da far passare in VPN
+    description: Indirizzi IPv4 dei dispositivi che usano questo host come gateway (es. una TV).
+  lan_interface:
+    name: Interfaccia di rete LAN
+    description: Se non esiste viene rilevata automaticamente (su Raspberry di solito end0).
+  default_country:
+    name: Paese predefinito
+    description: Codice paese a due lettere (es. US, GB, IT).
+  default_city:
+    name: Città predefinita
+    description: Facoltativa (es. Anchorage). Vuota = server più veloce del paese.
+  kill_switch_on_stop:
+    name: Blocca i dispositivi se l'add-on è fermo
+    description: Se attivo e la VPN era accesa, con l'add-on fermo i dispositivi restano senza internet invece di uscire senza VPN.
+  language:
+    name: Lingua
+    description: Lingua dei nomi e degli stati delle entità MQTT (en = inglese, it = italiano). I log sono sempre in inglese.
