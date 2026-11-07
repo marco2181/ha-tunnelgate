@@ -1,5 +1,5 @@
 name: TunnelGate
-version: "1.0.0"
+version: "1.0.1"
 timeout: 30
 slug: tunnelgate
 description: Route only selected LAN devices (e.g. a TV) through a WireGuard (NordLynx) tunnel of your NordVPN subscription. Unofficial, not affiliated with Nord Security.

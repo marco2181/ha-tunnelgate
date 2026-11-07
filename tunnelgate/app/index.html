@@ -74,6 +74,7 @@
 
   /* side */
   .side { grid-area: side; display: grid; gap: 16px; align-content: start; }
+  main > * { min-width: 0; }
   .panel { padding: 18px; }
   .favs { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip { background: var(--card2); border-radius: 999px; padding: 8px 14px; cursor: pointer;
@@ -133,7 +134,8 @@
   @media (hover: none) { .nav { display: none; } }
 
   @media (max-width: 900px) {
-    main { grid-template-columns: 1fr; grid-template-areas: "hero" "side" "map" "list"; padding: 12px; }
+    /* minmax(0, …): the horizontal rows must scroll, not widen the column */
+    main { grid-template-columns: minmax(0, 1fr); grid-template-areas: "hero" "side" "map" "list"; padding: 12px; }
     .hero { grid-template-columns: auto 1fr; }
     .hero .act { grid-column: 1 / -1; }
     .big { width: 100%; }
