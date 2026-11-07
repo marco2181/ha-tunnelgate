@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2
+
+- New: on phones a top bar with a ☰ button opens the Home Assistant sidebar (HA hides it on narrow screens and add-on panels have no header of their own).
+
 ## 1.0.1
 
 - Fix: on phones and narrow screens (e.g. the Home Assistant mobile app) the panel was ~30,000 px wide because the horizontal country row widened the layout. The page now fits the screen and the rows scroll.

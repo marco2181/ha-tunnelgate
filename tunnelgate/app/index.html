@@ -74,6 +74,14 @@
 
   /* side */
   .side { grid-area: side; display: grid; gap: 16px; align-content: start; }
+  /* phone top bar: HA hides its sidebar on narrow screens and ingress panels get no header */
+  .topbar { display: none; position: sticky; top: 0; z-index: 5; height: 56px; align-items: center; gap: 8px;
+    padding: 0 8px; background: var(--card); border-bottom: 1px solid var(--line); }
+  .topbar .menu { background: none; color: var(--text); width: 44px; height: 44px; border-radius: 50%;
+    display: grid; place-items: center; padding: 0; }
+  .topbar .menu:active { background: var(--card2); }
+  .topbar-title { font-size: 20px; font-weight: 500; }
+  @media (max-width: 870px) { .topbar { display: flex; } }
   main > * { min-width: 0; }
   .panel { padding: 18px; }
   .favs { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -144,6 +152,12 @@
 </style>
 </head>
 <body>
+<header class="topbar">
+  <button class="menu" id="menu" data-i18n-aria="menu" aria-label="Menu">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+  </button>
+  <span class="topbar-title">TunnelGate</span>
+</header>
 <main id="app">
   <section class="card hero" id="hero">
     <div class="shield" aria-hidden="true">
@@ -224,7 +238,7 @@ const flag = cc => /^[A-Z]{2}$/.test(cc || "") ? String.fromCodePoint(...[...cc]
 /* --- i18n: English (default) and Italian --- */
 const T = {
   en: {
-    title: "TunnelGate",
+    title: "TunnelGate", menu: "Menu",
     statIp: "Public IP", statServer: "Server", statLoad: "Load", statSince: "Connected for",
     connect: "Connect", disconnect: "Disconnect",
     mapTitle: "Server map", mapAria: "Server map",
@@ -248,7 +262,7 @@ const T = {
     fastestTile: "⚡ Fastest", bestServer: "best server in the country"
   },
   it: {
-    title: "TunnelGate",
+    title: "TunnelGate", menu: "Menu",
     statIp: "IP pubblico", statServer: "Server", statLoad: "Carico", statSince: "Connesso da",
     connect: "Connetti", disconnect: "Disconnetti",
     mapTitle: "Mappa server", mapAria: "Mappa dei server",
@@ -528,6 +542,13 @@ document.querySelectorAll(".nav").forEach(b => b.onclick = () => {
 ["grid", "cities"].forEach(id => $(id).addEventListener("wheel", e => {
   if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { $(id).scrollLeft += e.deltaY; e.preventDefault(); }
 }, {passive: false}));
+
+/* open Home Assistant's sidebar: the event must start inside HA's shadow tree, i.e. from our iframe */
+$("menu").onclick = () => {
+  const ev = new CustomEvent("hass-toggle-menu", {bubbles: true, composed: true});
+  try { (window.frameElement || window.parent.document.querySelector("home-assistant")).dispatchEvent(ev); }
+  catch (e) { /* not embedded in HA */ }
+};
 
 $("btn").onclick = async () => {
   if (!S) return;
