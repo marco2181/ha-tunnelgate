@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+
+- New: `blocked_domains` option. Domains listed there (and their subdomains) get an empty DNS answer for the devices in `clients` while the VPN is on, e.g. to block ad servers. Empty by default: nothing changes unless you fill it in.
+
 ## 1.0.2
 
 - New: on phones a top bar with a ☰ button opens the Home Assistant sidebar (HA hides it on narrow screens and add-on panels have no header of their own).

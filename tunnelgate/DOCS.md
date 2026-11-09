@@ -19,6 +19,7 @@ lan_interface: end0            # auto-detected if missing
 default_country: US            # used on first start
 default_city: ""               # empty = fastest server
 kill_switch_on_stop: false     # true = devices offline while the add-on is stopped
+blocked_domains: []            # optional, see "Blocking domains"
 language: en                   # en | it (entity names)
 ```
 
@@ -35,6 +36,20 @@ Static IPv4 configuration on the device:
 
 - **Sidebar → TunnelGate**: connect/disconnect, choose country and city, favourites, live traffic, map.
 - **Entities**: `switch.tunnelgate_vpn`, `select.tunnelgate_country`, `select.tunnelgate_city`, status/server/IP/location sensors.
+
+## Blocking domains
+
+List domains in `blocked_domains` to stop the devices in `clients` from reaching them, for example ad servers. Subdomains are included, so `ads.example.com` also blocks `eu.ads.example.com`. Restart the add-on after changing the list. Each blocked name appears once in the log as `DNS blocked: <name>`.
+
+```yaml
+blocked_domains:
+  - ads.example.com
+```
+
+- It only works **while the VPN is on**: with the VPN off the devices use their own DNS.
+- It cannot remove ads delivered from the same servers as the video, as most streaming apps do.
+- Apps using DNS over HTTPS are not affected.
+- Blocking the wrong domain can break an app or empty its home screen. To undo it, remove the domain and restart the add-on; the device may keep the block cached for up to 5 minutes.
 
 ## Behaviour
 
@@ -61,5 +76,6 @@ Static IPv4 configuration on the device:
 2. Opzioni: `token` (Nord Account → NordVPN → Configurazione manuale → Genera nuovo token), `clients` (IP dei dispositivi), `language: it`.
 3. Sul dispositivo: IP statico come in `clients`, prefisso `24`, **gateway = IP di Home Assistant**, DNS `8.8.8.8` / `8.8.4.4`.
 4. Usa il pannello **TunnelGate** nella barra laterale o le entità MQTT.
+5. Facoltativo: in `blocked_domains` elenca i domini da bloccare (es. server pubblicitari) e riavvia l'add-on. Vale solo a VPN accesa, include i sottodomini e non toglie la pubblicità dentro le app di streaming. Bloccare il dominio sbagliato può far smettere di funzionare un'app.
 
 Se Home Assistant è spento il dispositivo resta senza internet: rimetti la sua rete in automatico (DHCP).

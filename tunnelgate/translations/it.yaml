@@ -17,6 +17,9 @@ configuration:
   kill_switch_on_stop:
     name: Blocca i dispositivi se l'add-on è fermo
     description: Se attivo e la VPN era accesa, con l'add-on fermo i dispositivi restano senza internet invece di uscire senza VPN.
+  blocked_domains:
+    name: Domini bloccati
+    description: Domini (e relativi sottodomini) a cui i dispositivi non possono accedere mentre la VPN è accesa, ad esempio server pubblicitari. Vuoto = nessun blocco. Bloccare il dominio sbagliato può far smettere di funzionare un'app.
   language:
     name: Lingua
     description: Lingua dei nomi e degli stati delle entità MQTT (en = inglese, it = italiano). I log sono sempre in inglese.
