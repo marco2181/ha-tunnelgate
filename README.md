@@ -37,6 +37,7 @@ Why a gateway instead of a VPN app on the device?
 - 🔒 **Kill switch**: if the tunnel drops, the selected devices are blocked instead of leaking your real IP.
 - 🧭 **DNS leak protection**: device DNS is answered through the tunnel and IPv6 (AAAA) answers are hidden, so devices stay on IPv4 → tunnel.
 - 📏 **MSS clamping** for the smaller tunnel MTU (fixes streaming apps that hang with timeouts).
+- 🚫 **Optional domain blocking**: stop the selected devices from reaching domains you list, e.g. ad servers.
 - 🖥️ **Sidebar panel** (Ingress): status, public IP, live traffic, world map, favourites, every country and city.
 - 🏠 **MQTT entities** created automatically: VPN switch, country and city selects, status / server / public IP / location sensors.
 - 🌍 English and Italian.
@@ -70,6 +71,7 @@ Updates are published to the same repository: Home Assistant shows *Update avail
 | `lan_interface` | LAN interface. Auto-detected if it doesn't exist (`end0` on a Raspberry Pi). |
 | `default_country` / `default_city` | Used on the very first start, e.g. `US` / `Chicago`. Empty city = fastest server. |
 | `kill_switch_on_stop` | If on (and the VPN was on), devices stay offline while the add-on is stopped. Default off: they go out without VPN. |
+| `blocked_domains` | Optional list of domains (subdomains included) the devices cannot reach while the VPN is on. See [Blocking domains](#blocking-domains). |
 | `language` | `en` or `it` for entity names. The panel follows your browser language. |
 
 ### Configure the device
@@ -106,6 +108,24 @@ automation:
         target:
           entity_id: switch.tunnelgate_vpn
 ```
+
+## Blocking domains
+
+TunnelGate already answers the devices' DNS while the VPN is on, so it can refuse names you don't want them to reach. List them in the add-on configuration and restart it:
+
+```yaml
+blocked_domains:
+  - ads.example.com     # also blocks eu.ads.example.com
+```
+
+The list is empty by default. Each blocked name appears once in the log as `DNS blocked: <name>`.
+
+Before relying on it:
+
+- It only works **while the VPN is on**. With the VPN off the devices use their own DNS.
+- It cannot remove ads delivered from the same servers as the video, as most streaming apps do.
+- Apps using DNS over HTTPS are not affected.
+- Blocking the wrong domain can break an app or empty its home screen. Add one domain at a time and test. To undo it, remove the domain and restart the add-on; the device may keep the block cached for up to 5 minutes.
 
 ## How it works
 
@@ -151,7 +171,7 @@ automation:
 - Accendi/spegni la VPN e cambi paese da **Home Assistant**: dashboard, automazioni, assistente vocale.
 
 ### Funzioni
-Tunnel WireGuard (NordLynx) con scelta automatica del server e riconnessione · solo gli IP indicati passano dalla VPN · **kill switch** · protezione dalle fughe DNS/IPv6 · correzione MTU/MSS per lo streaming · **pannello nella barra laterale** con stato, IP, traffico, mappa, preferiti, paesi e città · **entità MQTT** automatiche.
+Tunnel WireGuard (NordLynx) con scelta automatica del server e riconnessione · solo gli IP indicati passano dalla VPN · **kill switch** · protezione dalle fughe DNS/IPv6 · correzione MTU/MSS per lo streaming · blocco facoltativo di domini · **pannello nella barra laterale** con stato, IP, traffico, mappa, preferiti, paesi e città · **entità MQTT** automatiche.
 
 ### Installazione
 1. *Impostazioni → Componenti aggiuntivi → Store → ⋮ → Repository* e aggiungi `https://github.com/marco2181/ha-tunnelgate`.
@@ -169,6 +189,19 @@ Gli aggiornamenti arrivano dalla repo: Home Assistant mostra *Aggiornamento disp
 Imposta la rete **manualmente**: IP `192.168.1.118` (come in `clients`), prefisso `24`, **gateway = IP di Home Assistant** (es. `192.168.1.2`), DNS `8.8.8.8` e `8.8.4.4`. Poi nel router riserva quell'IP al dispositivo.
 
 > ⚠️ Usa solo DNS IPv4 sul dispositivo: se riceve anche un DNS IPv6 dal router può uscire in IPv6 senza passare dal gateway. Per sicurezza totale disattiva l'IPv6 nella rete di casa.
+
+### Bloccare dei domini
+TunnelGate risponde già al DNS dei dispositivi mentre la VPN è accesa, quindi può rifiutare i nomi che non vuoi raggiungano. Elencali nella configurazione e riavvia l'add-on:
+
+```yaml
+blocked_domains:
+  - ads.example.com     # blocca anche eu.ads.example.com
+```
+
+- Funziona solo **a VPN accesa**: a VPN spenta i dispositivi usano il loro DNS.
+- Non toglie la pubblicità che arriva dagli stessi server del video, come succede nella maggior parte delle app di streaming.
+- Le app che usano DNS over HTTPS non ne risentono.
+- Bloccare il dominio sbagliato può far smettere di funzionare un'app o svuotarne la home. Aggiungi un dominio alla volta e prova. Per tornare indietro togli il dominio e riavvia l'add-on: il dispositivo può ricordare il blocco per un massimo di 5 minuti.
 
 ### Problemi comuni
 - `ip_forward is 0` nel log → disattiva la *Modalità protezione* e riavvia.

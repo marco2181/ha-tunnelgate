@@ -17,6 +17,9 @@ configuration:
   kill_switch_on_stop:
     name: Block devices while the add-on is stopped
     description: If enabled and the VPN was on, devices have no internet while the add-on is stopped instead of going out without VPN.
+  blocked_domains:
+    name: Blocked domains
+    description: Domains (and their subdomains) the devices cannot reach while the VPN is on, e.g. ad servers. Empty = nothing blocked. Blocking the wrong domain can break an app.
   language:
     name: Language
     description: Language of the MQTT entity names and states (en = English, it = Italian). Logs are always in English.

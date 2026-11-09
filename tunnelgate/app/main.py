@@ -82,6 +82,8 @@ for _c in OPTS.get("clients", []):
         CLIENTS.append(str(ipaddress.IPv4Address(_c.strip())))
     except ValueError:
         log.error("Client ignored, not a valid IPv4 address: %r", _c)
+BLOCKED_DOMAINS = {_d.strip().strip(".").lower() for _d in OPTS.get("blocked_domains") or []}
+BLOCKED_DOMAINS.discard("")
 
 lock = threading.RLock()
 runtime = {"status": "disconnected", "server": None, "city": None, "country": None,
@@ -694,6 +696,26 @@ def dns_question_end(q):
     return i + 4
 
 
+dns_blocked_seen = set()
+
+
+def dns_is_blocked(q):
+    """True if the queried name is in blocked_domains or is a subdomain of one."""
+    if not BLOCKED_DOMAINS:
+        return False
+    labels, i = [], 12
+    while q[i] and not q[i] & 0xC0:
+        labels.append(q[i + 1:i + 1 + q[i]].decode("ascii", "replace").lower())
+        i += q[i] + 1
+    if not any(".".join(labels[k:]) in BLOCKED_DOMAINS for k in range(len(labels))):
+        return False
+    name = ".".join(labels)
+    if name not in dns_blocked_seen and len(dns_blocked_seen) < 1000:
+        dns_blocked_seen.add(name)  # log each name once, these queries repeat a lot
+        log.info("DNS blocked: %s", name)
+    return True
+
+
 # root-zone SOA (TTL/minimum 300 s) so clients can cache the NODATA answer
 DNS_SOA = (b"\x00" + struct.pack(">HHIH", 6, 1, 300, 22) + b"\x00\x00"
            + struct.pack(">IIIII", 1, 3600, 600, 86400, 300))
@@ -759,9 +781,10 @@ def dns_answer(q, tcp=False):
     try:
         qend = dns_question_end(q)
         qtype = struct.unpack(">H", q[qend - 4:qend - 2])[0]
+        blocked = dns_is_blocked(q)
     except (IndexError, struct.error):
         return None
-    if qtype in (28, 65):  # AAAA, HTTPS -> no IPv6 for clients in VPN
+    if qtype in (28, 65) or blocked:  # AAAA, HTTPS -> no IPv6 for clients in VPN
         return dns_reply(q, 0)
     if not tunnel_up():
         return dns_reply(q, 2)  # SERVFAIL: client retries later instead of hanging
